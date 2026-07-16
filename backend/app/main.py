@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from config import settings
 
 app = FastAPI()
 
@@ -15,8 +16,10 @@ async def health():
 def documents():
     return "How do you think I am doing."
 
+'''@app.get("/test")
+def test():
+    return {"key_loaded": bool(settings.anthropic_api)}
+'''
 
 if __name__ == "__main__":
     print(reading_roots())
-    print(health())
-    print(documents())

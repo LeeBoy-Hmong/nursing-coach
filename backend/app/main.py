@@ -9,13 +9,13 @@ import anthropic
 app = FastAPI()
 
 # Create a client instance storing it in a variable - utilize api key.
-client = anthropic.Anthropic(api_key=settings.anthropic_api)
+client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api)
 
 # Create a BaseModle class -- Data Schema --
 class NotesRequests(BaseModel):
     notes: str  # Whatever is declare to this endpoint, must be a note string.
 
-@app.post("/claud-reply")
+@app.post("/claude-reply")
 async def user_question(question: NotesRequests):  # run the model as the argument not the 
     # Capture the structure the incoming text. Create a variable to represent it.
     user_notes = question.notes
@@ -23,7 +23,7 @@ async def user_question(question: NotesRequests):  # run the model as the argume
     logging_payload = json.dumps({"received notes": user_notes})
     print(f"Logging JSON payload: {logging_payload}")
     # Run the Claude model similar to 'claude-reply' and then utilize the POST data as the argument.
-    message = client.messages.create(
+    message = await client.messages.create(
         model="claude-haiku-4-5",
         max_tokens=1024,
         messages=[{
@@ -31,6 +31,7 @@ async def user_question(question: NotesRequests):  # run the model as the argume
             "content": f"Analyze the given notes: {user_notes}"
         }]
     )
+
     # Block extract the reponse simillr to 'claude-reply'.
     block = message.content[0]
     reply_text = block.text if block.type == "text" else ""
@@ -44,7 +45,7 @@ async def user_question(question: NotesRequests):  # run the model as the argume
 async def quiz_questions(questions: NotesRequests):
     user_question = questions.notes
 
-    quizzer = client.messages.create(
+    quizzer = await client.messages.create(
         model="claude-haiku-4-5",
         max_tokens=1024,
         messages=[{

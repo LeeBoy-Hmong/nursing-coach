@@ -2,6 +2,7 @@
 from fastapi import FastAPI, HTTPException
 from config import settings
 from pydantic import BaseModel
+import re
 import json
 import anthropic
 
@@ -60,15 +61,23 @@ async def quiz_questions(questions: NotesRequests):
     )
     block = quizzer.content[0]
     reply_txt = block.text if block.type == "text" else ""
+    start_cleanup = re.sub(r"^````(?:\w+)?\n", "", reply_txt)  # putting it in an r'' string treats the text as raw string. so, backslashes (\) are literally backslash not separaters.
+    complete_reply = re.sub(r"\n?```$", "", start_cleanup )  # completes the clean up.
+    
+    # Take care of the trunacation.
+    if complete_reply.strip().endswith(("{","[","'")):
+        raise ValueError("Truncated response was detected. Response was cut.")
+    
+    print("Raw Reply", repr(complete_reply))  # This creates a raw reply in the terminal when run into a bad gateway (Error 502).
     
     try:
-        claude_reply = json.loads(reply_txt)
+        claude_reply = json.loads(complete_reply)
         return {
         "users question": user_question,
         "claude's reply": f"Here are 10 quizzes to your question: {claude_reply}"
     }
     except json.JSONDecodeError as e:
-        raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")
+        raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")  # This creates a guard to ensure json.loads fail properly instead of 500 status crash.
 
 @app.get("/")
 def reading_roots():

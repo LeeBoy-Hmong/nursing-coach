@@ -66,7 +66,7 @@ async def quiz_questions(questions: NotesRequests):
     
     # Take care of the trunacation.
     if complete_reply.strip().endswith(("{","[","'")):
-        raise ValueError("Truncated response was detected. Response was cut.")
+        raise HTTPException(status_code=502, detail="Truncated response detected. It should be cut off.")
     
     print("Raw Reply", repr(complete_reply))  # This creates a raw reply in the terminal when run into a bad gateway (Error 502).
     

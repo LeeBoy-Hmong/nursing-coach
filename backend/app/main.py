@@ -61,7 +61,7 @@ async def quiz_questions(questions: NotesRequests):
     )
     block = quizzer.content[0]
     reply_txt = block.text if block.type == "text" else ""
-    start_cleanup = re.sub(r"^````(?:\w+)?\n", "", reply_txt)  # putting it in an r'' string treats the text as raw string. so, backslashes (\) are literally backslash not separaters.
+    start_cleanup = re.sub(r"^```(?:\w+)?\n", "", reply_txt)  # putting it in an r'' string treats the text as raw string. so, backslashes (\) are literally backslash not separaters.
     complete_reply = re.sub(r"\n?```$", "", start_cleanup )  # completes the clean up.
     
     # Take care of the trunacation.

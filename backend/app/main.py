@@ -1,5 +1,6 @@
 # Imports for Anthropic and FastAPI
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from pydantic import BaseModel
 import re
@@ -7,6 +8,18 @@ import json
 import anthropic
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:8081"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 # Create a client instance storing it in a variable - utilize api key.
 client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api)

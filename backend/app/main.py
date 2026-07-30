@@ -28,31 +28,31 @@ client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api)
 class NotesRequests(BaseModel):
     notes: str  # Whatever is declare to this endpoint, must be a note string.
 
-@app.post("/claude-reply")
-async def user_question(question: NotesRequests):  # run the model as the argument not the 
-    # Capture the structure the incoming text. Create a variable to represent it.
-    user_notes = question.notes
-    # Use the json import to dump or process structured logs.
-    logging_payload = json.dumps({"received notes": user_notes})
-    print(f"Logging JSON payload: {logging_payload}")
-    # Run the Claude model similar to 'claude-reply' and then utilize the POST data as the argument.
-    message = await client.messages.create(
-        model="claude-haiku-4-5",
-        max_tokens=1024,
-        messages=[{
-            "role": "user",
-            "content": f"Analyze the given notes: {user_notes}"
-        }]
-    )
+# @app.post("/claude-reply")
+# async def user_question(question: NotesRequests):  # run the model as the argument not the 
+#     # Capture the structure the incoming text. Create a variable to represent it.
+#     user_notes = question.notes
+#     # Use the json import to dump or process structured logs.
+#     logging_payload = json.dumps({"received notes": user_notes})
+#     print(f"Logging JSON payload: {logging_payload}")
+#     # Run the Claude model similar to 'claude-reply' and then utilize the POST data as the argument.
+#     message = await client.messages.create(
+#         model="claude-haiku-4-5",
+#         max_tokens=1024,
+#         messages=[{
+#             "role": "user",
+#             "content": f"Analyze the given notes: {user_notes}"
+#         }]
+#     )
 
-    # Block extract the reponse simillr to 'claude-reply'.
-    block = message.content[0]
-    reply_text = block.text if block.type == "text" else ""
-    # Return the input.
-    return {
-        "Notes": user_notes,
-        "Reply": reply_text
-    }
+#     # Block extract the reponse simillr to 'claude-reply'.
+#     block = message.content[0]
+#     reply_text = block.text if block.type == "text" else ""
+#     # Return the input.
+#     return {
+#         "Notes": user_notes,
+#         "Reply": reply_text
+#     }
 
 @app.post("/claude-quiz")
 async def quiz_questions(questions: NotesRequests):
@@ -88,7 +88,7 @@ async def quiz_questions(questions: NotesRequests):
         claude_reply = json.loads(complete_reply)
         return {
         "users question": user_question,
-        "claude's reply": f"Here are 10 quizzes to your question: {claude_reply}"
+        "claude's reply": claude_reply
     }
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")  # This creates a guard to ensure json.loads fail properly instead of 500 status crash.

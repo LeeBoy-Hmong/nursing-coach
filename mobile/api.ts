@@ -1,6 +1,7 @@
 export interface Question {
     question: string;
     answer: string;
+    reveal: boolean;
 }
 
 const API_URL = "http://localhost:8000"

@@ -6,6 +6,7 @@ ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 # create a class for BaseSettings - this will allow the calling of anthropic key cleanly.
 class AppSettings(BaseSettings):
     anthropic_api: str
+    supabase_connetor: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_PATH

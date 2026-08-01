@@ -19,7 +19,7 @@
  */
 export const colors = {
   // surfaces
-  background: '#3d8383',   // page background, very slightly warm off-white
+  background: '#e684d5',   // page background, very slightly warm off-white
   surface: '#ffffff',      // cards sitting on the background
   border: '#dfe5e5',       // hairlines, input outlines
 

@@ -3,6 +3,7 @@ import uuid
 from typing import ClassVar
 from datetime import datetime
 from sqlmodel import SQLModel, Field
+from sqlalchemy import Column, DateTime, func
 
 class StudyItem(SQLModel, table=True):
     __tablename__: ClassVar[str] = "study_item"  # Change the tablename is now generated as "study_item" instead of "studyitem" (typical naming conven of SQLMol)
@@ -13,8 +14,14 @@ class StudyItem(SQLModel, table=True):
     title: str
     topic: str | None = None
     source_type: str = "ai_generated"
-    created_at: datetime | None = None  # Database will fill these automatically.
-    updated_at: datetime | None = None
+    created_at: datetime = Field(  # Created a default so that our Postgres would know what to put in.
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    )
+    updated_at: datetime = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    )
 
 class QuizQuestion(SQLModel, table=True):
     __tablename__: ClassVar[str] = "quiz_question"

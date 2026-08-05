@@ -8,6 +8,8 @@ import json
 import anthropic
 from app.database import get_session, AsyncSession
 from app.models import StudyItem, QuizQuestion
+from sqlmodel import select
+
 
 app = FastAPI()
 
@@ -56,7 +58,7 @@ class NotesRequests(BaseModel):
 #         "Reply": reply_text
 #     } """
 
-@app.post("/claude-quiz")
+@app.post("/claude-quiz")  # Create quizzes with the given keyword by claude.
 async def quiz_questions(questions: NotesRequests, session: AsyncSession = Depends(get_session),):
     user_question = questions.notes
 
@@ -120,6 +122,24 @@ async def quiz_questions(questions: NotesRequests, session: AsyncSession = Depen
 
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")  # This creates a guard to ensure json.loads fail properly instead of 500 status crash.
+
+@app.get("/quizzes")  # List out the currently saved quizzes from supabase
+async def database_quizzes(session: AsyncSession = Depends(get_session)):
+    ''' 1a. Build out a query -- created a statement variable with select function from SQLAlchemy a .where() & .order_by() method.
+    1b. We're pulling from the study_item table -- remember we changed the class StudyItem '''
+    statement = select(StudyItem).where(StudyItem.type == "quiz").order_by(StudyItem.created_at.desc())  # type: ignore
+    # 2a. Run the query that was built -- give the results and object
+    results = await session.execute(statement)
+    '''# .scalars() unwraps the row tuple. execute() always returns rows as tuples
+    # because SQL can select several things at once -- select(StudyItem) gives
+    # (StudyItem,), select(StudyItem, QuizQuestion) gives (StudyItem, QuizQuestion).
+    # scalars() takes the FIRST column of each row, so here: StudyItem objects.
+    # .all() then collects them into a list.
+    # (SQLModel's session.exec() does this unwrapping for you -- we use SQLAlchemy's
+    #  execute(), so we unwrap manually.)'''
+    quiz_results = results.scalars().all()
+
+    return quiz_results
 
 @app.get("/")
 def reading_roots():

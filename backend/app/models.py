@@ -2,7 +2,7 @@
 import uuid
 from typing import ClassVar
 from datetime import datetime
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, DateTime, func
 
 class StudyItem(SQLModel, table=True):
@@ -22,6 +22,7 @@ class StudyItem(SQLModel, table=True):
         default=None,
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     )
+    questions: list["QuizQuestion"] = Relationship(back_populates="study_item")  # Build a connected realional data to the quiz_question table's foreign key (study_item_id).
 
 class QuizQuestion(SQLModel, table=True):
     __tablename__: ClassVar[str] = "quiz_question"
@@ -31,6 +32,7 @@ class QuizQuestion(SQLModel, table=True):
     question: str
     answer: str
     position: int
+    study_item: "StudyItem" = Relationship(back_populates="questions") # So that the query authorship could be done in Python. DB does the joining still -- SQLAlchemy generates the SQL.
 
 class MedCard(SQLModel, table=True):
     __tablename__: ClassVar[str] = "med_card"

@@ -6,10 +6,11 @@ from pydantic import BaseModel
 import re
 import json
 import anthropic
+import uuid
 from app.database import get_session, AsyncSession
 from app.models import StudyItem, QuizQuestion
 from sqlmodel import select
-
+from sqlalchemy.orm import selectinload
 
 app = FastAPI()
 
@@ -59,7 +60,7 @@ class NotesRequests(BaseModel):
 #     } """
 
 @app.post("/claude-quiz")  # Create quizzes with the given keyword by claude.
-async def quiz_questions(questions: NotesRequests, session: AsyncSession = Depends(get_session),):
+async def quiz_questions(questions: NotesRequests, session: AsyncSession = Depends(get_session)):
     user_question = questions.notes
 
     quizzer = await client.messages.create(
@@ -140,6 +141,21 @@ async def database_quizzes(session: AsyncSession = Depends(get_session)):
     quiz_results = results.scalars().all()
 
     return quiz_results
+
+@app.get("/quizzes/{quiz_id}") # {quiz_id} is a path parameter -- Grab the quiz when a student want's that selected quiz.
+async def get_id(quiz_id: uuid.UUID, session: AsyncSession = Depends(get_session)):
+    # 3. Fetch the children of what we are looking for.
+    statement = select(StudyItem).where(StudyItem.id == quiz_id).options(selectinload(StudyItem.questions))  # selectinload -- eager loads it. # type: ignore
+
+    results = await session.execute(statement)
+
+    quiz_results = results.scalar_one_or_none()
+    # 2. Write an if statement to return an error if that id does not exist.
+    if not quiz_results:
+        raise HTTPException(status_code=404, detail="Your request failed to fetch the required data.") # Server reached the site, but the request failed.
+
+    return quiz_results
+    
 
 @app.get("/")
 def reading_roots():

@@ -8,7 +8,7 @@ import json
 import anthropic
 import uuid
 from app.database import get_session, AsyncSession
-from app.models import StudyItem, QuizQuestion
+from app.models import StudyItem, QuizQuestion, StudyItemRead
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 
@@ -139,10 +139,11 @@ async def database_quizzes(session: AsyncSession = Depends(get_session)):
     # (SQLModel's session.exec() does this unwrapping for you -- we use SQLAlchemy's
     #  execute(), so we unwrap manually.)'''
     quiz_results = results.scalars().all()
+    
 
     return quiz_results
 
-@app.get("/quizzes/{quiz_id}") # {quiz_id} is a path parameter -- Grab the quiz when a student want's that selected quiz.
+@app.get("/quizzes/{quiz_id}", response_model=StudyItemRead) # {quiz_id} is a path parameter -- Grab the quiz when a student want's that selected quiz. response_model is the JSON shape we want.
 async def get_id(quiz_id: uuid.UUID, session: AsyncSession = Depends(get_session)):
     # 3. Fetch the children of what we are looking for.
     statement = select(StudyItem).where(StudyItem.id == quiz_id).options(selectinload(StudyItem.questions))  # selectinload -- eager loads it. # type: ignore
@@ -155,6 +156,9 @@ async def get_id(quiz_id: uuid.UUID, session: AsyncSession = Depends(get_session
         raise HTTPException(status_code=404, detail="Your request failed to fetch the required data.") # Server reached the site, but the request failed.
 
     return quiz_results
+
+@app.get("/quizzezs/{id}")
+
     
 
 @app.get("/")

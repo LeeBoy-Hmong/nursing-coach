@@ -38,7 +38,7 @@ class MedCard(SQLModel, table=True):
     __tablename__: ClassVar[str] = "med_card"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    study_item_id: uuid.UUID = Field(foreign_key="study_item.id")
+    study_item_id: uuid.UUID
     generic_name: str
     brand_name: str | None = None
     drug_class: str | None = None
@@ -54,3 +54,26 @@ class MedCard(SQLModel, table=True):
     rxcui: str | None = None
     external_verified_at: datetime | None = None
     indication: str | None = None
+
+# Create a class to describe one question in the respone. Call is "QuizeQuestionRead"
+# this is not a table it's a description of a JSON shape
+# Give it 4 attributes -- id, position, answer, question
+class QuizQuestionRead(SQLModel, table=False):
+    id: uuid.UUID
+    question: str
+    answer: str
+    position: int 
+
+
+# Create a class to describe it's quiz WITH its questions. Call it "StudyItemRead"
+class StudyItemRead(SQLModel, table=False):
+    id: uuid.UUID
+    type: str
+    title: str 
+    topic: str | None = None
+    source_type: str
+    created_at: datetime = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    )
+    questions : list[QuizQuestionRead] = []

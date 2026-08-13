@@ -156,10 +156,7 @@ async def get_id(quiz_id: uuid.UUID, session: AsyncSession = Depends(get_session
         raise HTTPException(status_code=404, detail="Your request failed to fetch the required data.") # Server reached the site, but the request failed.
 
     return quiz_results
-
-@app.get("/quizzezs/{id}")
-
-    
+ 
 
 @app.get("/")
 def reading_roots():

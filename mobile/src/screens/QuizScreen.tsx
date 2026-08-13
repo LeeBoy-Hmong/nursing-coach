@@ -1,8 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, TextInput, View, Button, ScrollView, Pressable } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { colors, spacing, fontSize, radius } from '../theme';
-import { fetchQuizList, Question } from '../lib/api';
+import { fetchQuiz, fetchQuizList, fetchQuizById, Question, SavedQuiz } from '../lib/api';
 
   // Defining the shape of my data. user 'interface' to build it out - similar to BaseModel in Pydantic.
   interface User {
@@ -17,6 +17,8 @@ export default function QuizScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [nurseTopic, setNurseTopic] = useState<string>("");
+  const [savedQuizzes, setSavedQuizzes] = useState<SavedQuiz[]>([]);  // savedQuizzes is to read-only.
+  const [openQuizzes, setOpenQuizzes] = useState<SavedQuiz | null>(null)  // State can hold the Object SavedQuiz or null. Holds one thing, or nothing yet.
   /* REVEAL STEP 1 — which answers are showing.
    * Indices only: [] = none, [0,3] = questions 1 and 4.
    * Separate from `quiz` because that's server data; this is UI state. */
@@ -27,17 +29,45 @@ export default function QuizScreen() {
     setUser({ ...user, isLoggedIN: true });  // '...user' copies existing fields.
   }
   // handler for fetching the quizes from FastAPI.
-async function getQuiz() {
-  setLoading(true);
-  setError("");
-  try {
-    setQuiz(await fetchQuizList(id));
-  } catch (e) {
-    setError('Could not load the quiz. Please try again.');
-  } finally {
-    setLoading(false);
+  async function loadSaved() {  // Defining the function before we call it with useEffect().
+    try {
+      setSavedQuizzes(await fetchQuizList()); // Write -- for data to come in.
+    } catch (e) {
+      setError('Quiz could not be loaded. Please try again later.')
+    }
   }
-}
+
+  useEffect(() => {
+    loadSaved();  // The call has to happen after the function definition -- otherwise there will be an infinite recursion (freez the app).
+  }, []);
+
+  async function openSavedQuiz(quizId: string) {  // Handler to allow the topic to be clickable and revisited.
+    console.log('TAPPED:', quizId)
+    try {
+      if (openQuizzes?.id === quizId) {
+        setOpenQuizzes(null);  // closes the questions/answers by clicking the topic again.
+        setRevealed([]);
+        return
+      }
+      setOpenQuizzes(await fetchQuizById(quizId));
+    } catch (e) {
+      console.log('FAILED:', e);
+      setError('This item is not selectable.')
+    }
+  }
+
+  async function getQuiz() {
+    setLoading(true);
+    setError("");
+    try {
+      setQuiz(await fetchQuiz(nurseTopic));  // generate & save to Database.
+      await loadSaved();  // Get's the quiz button -- Fetches the list.
+    } catch (e) {
+      setError('Could not load the quiz. Please reach out from more assistance.');
+    } finally {
+      setLoading(false);
+    }
+  }
   /* REVEAL STEP 2 — flip one question on tap.
    * Both branches build a NEW array, never .push(): React compares by reference,
    * so mutating in place looks unchanged and skips the re-render.
@@ -49,7 +79,7 @@ async function getQuiz() {
       setRevealed([...revealed, index])               // hidden -> show (copy + append)
     }
   }
-  // store it into the endpoint of returns
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -74,10 +104,28 @@ async function getQuiz() {
           * render and loops forever. */}
         {quiz.map((q, index) => (
           <Pressable key={ index } onPress={ () => toggleHandler(index) }>
-            <Text>{q.question}</Text>
+            <Text>{ q.question }</Text>
             { revealed.includes(index) ? <Text>{q.answer}</Text> : null }
           </Pressable>
         ))}
+
+        {savedQuizzes.map((q) => (  // Renders the give saved topics (e.g. Wounds, heart failure, etc.)
+          <Pressable key={q.id} onPress={() => openSavedQuiz(q.id)}>
+            <Text>{ q.title }</Text>
+          </Pressable>
+        ))}
+
+        {openQuizzes ? (
+          <View>
+            <Text>Notes on: {openQuizzes.title}</Text>
+            {openQuizzes.questions.map((q, index) => (
+              <Pressable key={q.id} onPress={() => toggleHandler(index)}>
+                <Text>{q.question}</Text>
+                {revealed.includes(index) ? <Text>{q.answer}</Text> : null}
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
 
         {user.isLoggedIN ? (
           <Text>You are logged in!</Text>

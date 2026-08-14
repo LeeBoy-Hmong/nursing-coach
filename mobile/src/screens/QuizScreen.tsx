@@ -3,6 +3,7 @@ import { StyleSheet, Text, TextInput, View, Button, ScrollView, Pressable } from
 import React, { useState, useEffect } from 'react';
 import { colors, spacing, fontSize, radius } from '../theme';
 import { fetchQuiz, fetchQuizList, fetchQuizById, Question, SavedQuiz } from '../lib/api';
+import QuizListItem from '../components/QuizListItem';
 
   // Defining the shape of my data. user 'interface' to build it out - similar to BaseModel in Pydantic.
   interface User {
@@ -20,10 +21,13 @@ export default function QuizScreen() {
   const [savedQuizzes, setSavedQuizzes] = useState<SavedQuiz[]>([]);  // savedQuizzes is to read-only.
   const [openQuizzes, setOpenQuizzes] = useState<SavedQuiz | null>(null)  // State can hold the Object SavedQuiz or null. Holds one thing, or nothing yet.
   /* REVEAL STEP 1 — which answers are showing.
-   * Indices only: [] = none, [0,3] = questions 1 and 4.
-   * Separate from `quiz` because that's server data; this is UI state. */
-  const [revealed, setRevealed] = useState<number[]>([]);
-
+   Holds KEYS, not positions. Two lists render answers (the generated quiz and an
+   opened saved quiz) and both count from 0, so plain indices collided: revealing
+   question 1 up top also revealed question 1 down below.
+   Saved questions use their real UUID. Generated ones have no id yet (the POST
+   returns Claude's raw JSON), so they get a "gen-<index>" key. A UUID can never
+   equal "gen-0", so the two lists can't step on each other. */
+  const [revealed, setRevealed] = useState<string[]>([])
   // handler for logging in.
   function loggedIN() {
     setUser({ ...user, isLoggedIN: true });  // '...user' copies existing fields.
@@ -42,14 +46,13 @@ export default function QuizScreen() {
   }, []);
 
   async function openSavedQuiz(quizId: string) {  // Handler to allow the topic to be clickable and revisited.
-    console.log('TAPPED:', quizId)
     try {
-      if (openQuizzes?.id === quizId) {
+      if (openQuizzes?.id === quizId) {  // ?. is optional chaining 
         setOpenQuizzes(null);  // closes the questions/answers by clicking the topic again.
-        setRevealed([]);
         return
       }
       setOpenQuizzes(await fetchQuizById(quizId));
+      setRevealed([]);
     } catch (e) {
       console.log('FAILED:', e);
       setError('This item is not selectable.')
@@ -61,6 +64,7 @@ export default function QuizScreen() {
     setError("");
     try {
       setQuiz(await fetchQuiz(nurseTopic));  // generate & save to Database.
+      setRevealed([]);  // New quiz, fresh slate -- otherwise old reveals bleed onto the new questions.
       await loadSaved();  // Get's the quiz button -- Fetches the list.
     } catch (e) {
       setError('Could not load the quiz. Please reach out from more assistance.');
@@ -69,14 +73,15 @@ export default function QuizScreen() {
     }
   }
   /* REVEAL STEP 2 — flip one question on tap.
+   * Takes a KEY (see REVEAL STEP 1), not a position.
    * Both branches build a NEW array, never .push(): React compares by reference,
    * so mutating in place looks unchanged and skips the re-render.
    * JS needs parens: `if (x) {}`, not Python's `if x:`. */
-  function toggleHandler(index: number) {
-    if (revealed.includes(index)) {
-      setRevealed(revealed.filter(i => i !== index))  // showing -> hide (keep all but this)
+  function toggleHandler(key: string) {
+    if (revealed.includes(key)) {
+      setRevealed(revealed.filter(k => k !== key))  // showing -> hide (keep all but this)
     } else {
-      setRevealed([...revealed, index])               // hidden -> show (copy + append)
+      setRevealed([...revealed, key])               // hidden -> show (copy + append)
     }
   }
 
@@ -103,25 +108,23 @@ export default function QuizScreen() {
           * onPress={() => fn(i)}: arrow defers the call. Without it, fn runs during
           * render and loops forever. */}
         {quiz.map((q, index) => (
-          <Pressable key={ index } onPress={ () => toggleHandler(index) }>
+          <Pressable key={ `gen-${index}` } onPress={ () => toggleHandler(`gen-${index}`) }>
             <Text>{ q.question }</Text>
-            { revealed.includes(index) ? <Text>{q.answer}</Text> : null }
+            { revealed.includes(`gen-${index}`) ? <Text>{q.answer}</Text> : null }
           </Pressable>
         ))}
 
-        {savedQuizzes.map((q) => (  // Renders the give saved topics (e.g. Wounds, heart failure, etc.)
-          <Pressable key={q.id} onPress={() => openSavedQuiz(q.id)}>
-            <Text>{ q.title }</Text>
-          </Pressable>
+        {savedQuizzes.map((q) => (  // Renders the given saved topics (e.g. Wounds, heart failure, etc.)
+          <QuizListItem key={q.id} title={q.title} onTap={() => openSavedQuiz(q.id)} />  // Component
         ))}
 
         {openQuizzes ? (
           <View>
             <Text>Notes on: {openQuizzes.title}</Text>
-            {openQuizzes.questions.map((q, index) => (
-              <Pressable key={q.id} onPress={() => toggleHandler(index)}>
-                <Text>{q.question}</Text>
-                {revealed.includes(index) ? <Text>{q.answer}</Text> : null}
+            {openQuizzes.questions.map((q) => (  // These come from GET /quizzes/{id}, so they have real UUIDs.
+              <Pressable key={q.id} onPress={() => toggleHandler(q.id)}>
+                <Text>{ q.question }</Text>
+                {revealed.includes(q.id) ? <Text>{q.answer}</Text> : null}
               </Pressable>
             ))}
           </View>

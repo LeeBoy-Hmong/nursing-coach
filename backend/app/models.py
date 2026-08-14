@@ -34,7 +34,6 @@ class QuizQuestion(SQLModel, table=True):
         index=True)  # idx_quiz_question_study_item_id
     question: str = Field(sa_type=Text)
     answer: str = Field(sa_type=Text)
-    difficulty: str | None = Field(default=None, sa_type=Text)
     position: int
     study_item: "StudyItem" = Relationship(back_populates="questions") # So that the query authorship could be done in Python. DB does the joining still -- SQLAlchemy generates the SQL.
     __table_args__ = (

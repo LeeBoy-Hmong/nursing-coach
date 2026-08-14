@@ -15,7 +15,8 @@ from sqlalchemy.orm import selectinload
 app = FastAPI()
 
 origins = [
-    "http://localhost:8081"
+    "http://localhost:8081",
+    "http://127.0.0.1:8000"
 ]
 
 app.add_middleware(
@@ -173,4 +174,4 @@ def test():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, log_level="debug", reload=True)

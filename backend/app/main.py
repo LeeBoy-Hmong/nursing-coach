@@ -32,7 +32,8 @@ client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api)
 
 # Create a BaseModle class -- Data Schema --
 class NotesRequests(BaseModel):
-    notes: str  # Whatever is declare to this endpoint, must be a note string.
+    question: str  # Whatever is declare to this endpoint, must be a note string.
+    topic: str | None = None # This is optional, users may leave it as null.
 """ 
 # @app.post("/claude-reply")
 # async def user_question(question: NotesRequests):  # run the model as the argument not the 
@@ -61,8 +62,9 @@ class NotesRequests(BaseModel):
 #     } """
 
 @app.post("/claude-quiz")  # Create quizzes with the given keyword by claude.
-async def quiz_questions(questions: NotesRequests, session: AsyncSession = Depends(get_session)):
-    user_question = questions.notes
+async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depends(get_session)):
+    user_question = userText.question
+    user_topic = userText.topic
 
     quizzer = await client.messages.create(
         model="claude-haiku-4-5",
@@ -92,9 +94,10 @@ async def quiz_questions(questions: NotesRequests, session: AsyncSession = Depen
     try:
         claude_reply = json.loads(claude_questions)  # 1. Claude returns 10 questions (already works)
 
-        new_study_item = StudyItem(  # 2. create a StudyItem (type="quiz", title=topic, source_type="ai_generated") -- making a folder for this quiz, no questions yet, just the label.
+        new_study_item = StudyItem(  # 2. create a StudyItem (type="quiz", title=user_question, topic=users_topic source_type="ai_generated") -- making a folder for this quiz, no questions yet, just the label.
             type="quiz",
             title=user_question,
+            topic=user_topic,
             source_type="ai_generated"
         )
 

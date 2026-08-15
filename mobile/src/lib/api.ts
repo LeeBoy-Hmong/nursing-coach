@@ -16,11 +16,11 @@ export interface SavedQuiz {
 
 const API_URL = "http://localhost:8000"
 
-export async function fetchQuiz(nurseTopic: string): Promise<Question[]> {
+export async function fetchQuiz(nurseQuestion: string, nurseTopic: string): Promise<Question[]> {
     const response = await fetch(`${API_URL}/claude-quiz`, {
         method: "POST",
         headers: { "Content-Type": "application/json"},
-        body: JSON.stringify({ notes: nurseTopic}),
+        body: JSON.stringify({ question: nurseQuestion, topic: nurseTopic }),
     });
     if (!response.ok) throw new Error(`Status: ${response.status}`);
     const data = await response.json();

@@ -17,6 +17,7 @@ export default function QuizScreen() {
   const [quiz, setQuiz] = useState<Question[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [nurseQuestion, setNurseQuestion] = useState<string>("");
   const [nurseTopic, setNurseTopic] = useState<string>("");
   const [savedQuizzes, setSavedQuizzes] = useState<SavedQuiz[]>([]);  // savedQuizzes is to read-only.
   const [openQuizzes, setOpenQuizzes] = useState<SavedQuiz | null>(null)  // State can hold the Object SavedQuiz or null. Holds one thing, or nothing yet.
@@ -42,7 +43,7 @@ export default function QuizScreen() {
   }
 
   useEffect(() => {
-    loadSaved();  // The call has to happen after the function definition -- otherwise there will be an infinite recursion (freez the app).
+    loadSaved();  // The call has to happen after the function definition -- otherwise there will be an infinite recursion (freeze the app).
   }, []);
 
   async function openSavedQuiz(quizId: string) {  // Handler to allow the topic to be clickable and revisited.
@@ -63,7 +64,7 @@ export default function QuizScreen() {
     setLoading(true);
     setError("");
     try {
-      setQuiz(await fetchQuiz(nurseTopic));  // generate & save to Database.
+      setQuiz(await fetchQuiz(nurseQuestion, nurseTopic));  // generate & save to Database.
       setRevealed([]);  // New quiz, fresh slate -- otherwise old reveals bleed onto the new questions.
       await loadSaved();  // Get's the quiz button -- Fetches the list.
     } catch (e) {
@@ -92,12 +93,19 @@ export default function QuizScreen() {
       contentContainerStyle={styles.scrollContent}
       >
         <TextInput
-          value={nurseTopic}
-          onChangeText={setNurseTopic}
-          placeholder="Enter a nursing topic"
+          value={nurseQuestion}
+          onChangeText={setNurseQuestion}
+          placeholder="Enter in question"
           style={styles.input}
         />
 
+        <TextInput
+        value={nurseTopic}
+        onChangeText={setNurseTopic}
+        placeholder='What is the topic?'
+        style={styles.input}
+        />
+        
         <Button title='Get Quiz' onPress={getQuiz} />
         {loading ? <Text>Loading...</Text> : null}
         {error ? <Text>{error}</Text> : null}
@@ -115,7 +123,7 @@ export default function QuizScreen() {
         ))}
 
         {savedQuizzes.map((q) => (  // Renders the given saved topics (e.g. Wounds, heart failure, etc.)
-          <QuizListItem key={q.id} title={q.title} onTap={() => openSavedQuiz(q.id)} />  // Component
+          <QuizListItem key={q.id} title={q.title} onTap={() => openSavedQuiz(q.id)} />  // Compon
         ))}
 
         {openQuizzes ? (

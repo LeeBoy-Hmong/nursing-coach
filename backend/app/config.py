@@ -7,6 +7,8 @@ ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 class AppSettings(BaseSettings):
     anthropic_api: str
     supabase_connector: str
+    rxnorm_base: str
+    openfda_base: str
     db_echo: bool = False
 
     model_config = SettingsConfigDict(

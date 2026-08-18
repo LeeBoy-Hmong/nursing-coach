@@ -52,19 +52,19 @@ class MedCard(SQLModel, table=True):
     )
     generic_name: str = Field(sa_type=Text)
     brand_name: str | None = Field(default=None, sa_type=Text)
-    drug_class: str | None = Field(sa_type=Text)
-    dose: str | None = Field(sa_type=Text)
-    route: str | None = Field(sa_type=Text)
-    frequency: str | None = Field(sa_type=Text)
-    mechanism_of_action: str | None = Field(sa_type=Text) 
-    contraindications: str | None = Field(sa_type=Text)
-    adverse_effects: str | None = Field(sa_type=Text)
-    nursing_considerations: str | None = Field(sa_type=Text)
-    patient_teaching: str | None = Field(sa_type=Text)
-    labs_to_monitor: str | None = Field(sa_type=Text)
+    drug_class: str | None = Field(default=None, sa_type=Text)
+    dose: str | None = Field(default=None, sa_type=Text)
+    route: str | None = Field(default=None, sa_type=Text)
+    frequency: str | None = Field(default=None, sa_type=Text)
+    mechanism_of_action: str | None = Field(default=None, sa_type=Text) 
+    contraindications: str | None = Field(default=None, sa_type=Text)
+    adverse_effects: str | None = Field(default=None, sa_type=Text)
+    nursing_considerations: str | None = Field(default=None, sa_type=Text)
+    patient_teaching: str | None = Field(default=None, sa_type=Text)
+    labs_to_monitor: str | None = Field(default=None, sa_type=Text)
     rxcui: str | None = Field(default=None, sa_type=Text, index=True)
     external_verified_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True)) # type: ignore
-    indication: str | None = Field(sa_type=Text)
+    indication: str | None = Field(default=None, sa_type=Text)
 
 # Create a class to describe one question in the respone. Call is "QuizeQuestionRead"
 # this is not a table it's a description of a JSON shape
@@ -81,7 +81,7 @@ class StudyItemRead(SQLModel, table=False):
     id: uuid.UUID
     type: str
     title: str 
-    topic: str | None = Field(sa_type=Text)
+    topic: str | None = Field(default=None, sa_type=Text)
     source_type: str
     created_at: datetime
     questions : list[QuizQuestionRead] = []

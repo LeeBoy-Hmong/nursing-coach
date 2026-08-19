@@ -30,10 +30,17 @@ app.add_middleware(
 # Create a client instance storing it in a variable - utilize api key.
 client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api)
 
-# Create a BaseModle class -- Data Schema --
+# Create a BaseModel class -- Data Schema -- StudyItem
 class NotesRequests(BaseModel):
     question: str  # Whatever is declare to this endpoint, must be a note string.
     topic: str | None = None # This is optional, users may leave it as null.
+
+# Create a BaseModel class -- Data Schema -- MedCard
+class MedCardRequests(BaseModel):
+    drug_name: str 
+    medical_topic: str | None = None 
+
+    
 """ 
 # @app.post("/claude-reply")
 # async def user_question(question: NotesRequests):  # run the model as the argument not the 
@@ -60,6 +67,11 @@ class NotesRequests(BaseModel):
 #         "Notes": user_notes,
 #         "Reply": reply_text
 #     } """
+
+@app.post("/medical-card")
+async def medical_card(user_text: MedCardRequests, session, AsyncSession = Depends(get_session)):
+    user_drug_name = user_text.drug_name
+    user_topic = user_text.medical_topic
 
 @app.post("/claude-quiz")  # Create quizzes with the given keyword by claude.
 async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depends(get_session)):

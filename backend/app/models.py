@@ -23,6 +23,8 @@ class StudyItem(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     )
     questions: list["QuizQuestion"] = Relationship(back_populates="study_item")  # Build a connected realional data to the quiz_question table's foreign key (study_item_id).
+    medical_card: "MedCard | None" = Relationship(back_populates="study_item")  # It's only one sending back one medical card, so we don't need to make it a list. It'll be a list by default so we need to state it and null.
+
 
 class QuizQuestion(SQLModel, table=True):
     __tablename__: ClassVar[str] = "quiz_question"
@@ -39,6 +41,7 @@ class QuizQuestion(SQLModel, table=True):
     __table_args__ = (
         Index("idx_quiz_question_item_position", "study_item_id", "position", unique=True),  # The trailing comma is needed to make it a tuple.
     )
+
 
 class MedCard(SQLModel, table=True):
     __tablename__: ClassVar[str] = "med_card"
@@ -65,6 +68,7 @@ class MedCard(SQLModel, table=True):
     rxcui: str | None = Field(default=None, sa_type=Text, index=True)
     external_verified_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True)) # type: ignore
     indication: str | None = Field(default=None, sa_type=Text)
+    study_item: "MedCard" = Relationship(back_populates="medical_cards")
 
 # Create a class to describe one question in the respone. Call is "QuizeQuestionRead"
 # this is not a table it's a description of a JSON shape
@@ -81,7 +85,26 @@ class StudyItemRead(SQLModel, table=False):
     id: uuid.UUID
     type: str
     title: str 
-    topic: str | None = Field(default=None, sa_type=Text)
+    topic: str | None = None
     source_type: str
     created_at: datetime
     questions : list[QuizQuestionRead] = []
+
+
+class MedCardRead(SQLModel, table=False):
+    generic_name: str
+    brand_name: str | None = None
+    drug_class: str | None = None
+    dose: str | None = None
+    route: str | None = None
+    frequency: str | None = None
+    mechanism_of_action: str | None = None 
+    contraindications: str | None = None
+    adverse_effects: str | None = None
+    nursing_considerations: str | None = None
+    patient_teaching: str | None = None
+    labs_to_monitor: str | None = None
+    rxcui: str | None = None
+    external_verified_at: datetime | None = None
+    indication: str | None = None
+    

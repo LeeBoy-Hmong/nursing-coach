@@ -148,7 +148,7 @@ async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depend
         raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")  # This creates a guard to ensure json.loads fail properly instead of 500 status crash.
 
 
-@app.post("/medical-card")
+@app.post("/med-cards")
 async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depends(get_session)):
     user_drug_name = user_text.drug_name
     user_topic = user_text.medical_topic
@@ -297,6 +297,17 @@ async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depen
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")
 
+@app.get("/med-cards")  # this is the list screen for medical cards -- where the front end will grab from.
+async def grab_med_cards(session: AsyncSession = Depends(get_session)):
+    # 1. Build out the query -- pull from study_item table -- use select().where().order_by() -- store it as varible (statement)
+    statement = select(StudyItem).where(StudyItem.type == "med_card").order_by(StudyItem.created_at.desc())  # type: ignore
+    # 2. Run the query -- give the results and object -- create a results variable to 'execute' the query statement.
+    results = await session.execute(statement)
+    # 3. Use SQLAlchemy methods .scalars() to unwrap the row tuples that we queried. Additionally, use the .all() method to excute the fetch completely to pull it to a Python-list
+    med_card_results = results.scalars().all()
+
+    return med_card_results
+
 @app.get("/quizzes")  # List out the currently saved quizzes from supabase
 async def database_quizzes(session: AsyncSession = Depends(get_session)):
     ''' 1a. Build out a query -- created a statement variable with select function from SQLAlchemy a .where() & .order_by() method.
@@ -313,8 +324,8 @@ async def database_quizzes(session: AsyncSession = Depends(get_session)):
     #  execute(), so we unwrap manually.)'''
     quiz_results = results.scalars().all()
     
-
     return quiz_results
+
 
 @app.get("/quizzes/{quiz_id}", response_model=StudyItemRead) # {quiz_id} is a path parameter -- Grab the quiz when a student want's that selected quiz. response_model is the JSON shape we want.
 async def get_id(quiz_id: uuid.UUID, session: AsyncSession = Depends(get_session)):

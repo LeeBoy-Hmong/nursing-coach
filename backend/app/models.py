@@ -78,7 +78,14 @@ class QuizQuestionRead(SQLModel, table=False):
     id: uuid.UUID
     question: str
     answer: str
-    position: int 
+    position: int
+
+# Create a model shape for a StudyItemListRead
+class StudyItemListRead(SQLModel, table=False):
+    id: uuid.UUID
+    title: str
+    topic: str | None = None
+    created_at: datetime
 
 
 # Create a class to describe it's quiz WITH its questions. Call it "StudyItemRead" -- wrapper class

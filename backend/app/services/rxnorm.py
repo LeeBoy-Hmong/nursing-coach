@@ -26,10 +26,10 @@ async def retrieve_rxnorm_drug(drug_name: str) -> str | None:
 
             return rxnorm_id[0]
 
-        except httpx.HTTPStatusError as error:
+        except httpx.HTTPStatusError as error:  # This covers a server response error -- Application/Protocol Level
             print(f"RxNorm API returned a error status {error.response.status_code}: {error}")
             return None
-        except httpx.RequestError as error:
+        except httpx.RequestError as error:  # This covers a communication response error -- Network/Transport level
             print(f"Request to fetch API failed: {error}")
             return None
 

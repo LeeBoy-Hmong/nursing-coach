@@ -12,7 +12,7 @@ def zero(value: list | None) -> str | None:
 
 
 # Set up an async function to -- have 'drug_name' as the parameter and pull null
-async def retrieve_openfda(drug_name: str) -> dict[str, str | None] | None:  # This needs to match the return of the function.
+async def retrieve_openfda(drug_name: str | None) -> dict[str, str | None] | None:  # This needs to match the return of the function.
     # set up the parameters
     param = {
         # https://api.fda.gov/drug/label.json?search=openfda.generic_name%3Ainsulin&limit=1
@@ -47,7 +47,7 @@ async def retrieve_openfda(drug_name: str) -> dict[str, str | None] | None:  # T
                 'patient_teaching':    zero(results.get("information_for_patients"))
             }
 
-    # Create an except of HTTPStatusError and RequestError
+    # Create an except of HTTPStat usError and RequestError
     except httpx.HTTPStatusError as error:
         print(f"opendFDA call is experiencing a server error: {error.response.status_code}: {error}")
         return None

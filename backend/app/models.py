@@ -23,7 +23,8 @@ class StudyItem(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     )
     questions: list["QuizQuestion"] = Relationship(back_populates="study_item")  # Build a connected realional data to the quiz_question table's foreign key (study_item_id).
-    medical_card: "MedCard | None" = Relationship(back_populates="study_item")  # It's only one sending back one medical card, so we don't need to make it a list. It'll be a list by default so we need to state it and null.
+    medical_card: "MedCard" = Relationship(back_populates="study_item",
+                                                  sa_relationship_kwargs={"uselist": False})  # It's only one sending back one medical card, so we don't need to make it a list. It'll be a list by default so we need to state it and null.
 
 
 class QuizQuestion(SQLModel, table=True):
@@ -68,7 +69,7 @@ class MedCard(SQLModel, table=True):
     rxcui: str | None = Field(default=None, sa_type=Text, index=True)
     external_verified_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True)) # type: ignore
     indication: str | None = Field(default=None, sa_type=Text)
-    study_item: "MedCard" = Relationship(back_populates="medical_cards")
+    study_item: "StudyItem" = Relationship(back_populates="medical_card")
 
 # Create a class to describe one question in the respone. Call is "QuizeQuestionRead"
 # this is not a table it's a description of a JSON shape
@@ -80,7 +81,7 @@ class QuizQuestionRead(SQLModel, table=False):
     position: int 
 
 
-# Create a class to describe it's quiz WITH its questions. Call it "StudyItemRead"
+# Create a class to describe it's quiz WITH its questions. Call it "StudyItemRead" -- wrapper class
 class StudyItemRead(SQLModel, table=False):
     id: uuid.UUID
     type: str
@@ -107,4 +108,13 @@ class MedCardRead(SQLModel, table=False):
     rxcui: str | None = None
     external_verified_at: datetime | None = None
     indication: str | None = None
+
+
+class StudyItemMedCardRead(SQLModel, table=False):
+    id: uuid.UUID
+    title: str
+    topic: str | None = None
+    created_at: datetime
+    medical_card: MedCardRead | None
+
     

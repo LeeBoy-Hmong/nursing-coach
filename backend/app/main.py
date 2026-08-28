@@ -11,7 +11,7 @@ import json
 import anthropic
 import uuid
 from app.database import get_session, AsyncSession
-from app.models import StudyItem, QuizQuestion, MedCard, StudyItemRead, StudyItemMedCardRead
+from app.models import StudyItem, QuizQuestion, MedCard, StudyItemRead, StudyItemMedCardRead, StudyItemListRead
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 
@@ -42,34 +42,6 @@ class NotesRequests(BaseModel):
 class MedCardRequests(BaseModel):
     drug_name: str
     medical_topic: str | None = None 
-
-    
-""" 
-# @app.post("/claude-reply")
-# async def user_question(question: NotesRequests):  # run the model as the argument not the 
-#     # Capture the structure the incoming text. Create a variable to represent it.
-#     user_notes = question.notes
-#     # Use the json import to dump or process structured logs.
-#     logging_payload = json.dumps({"received notes": user_notes})
-#     print(f"Logging JSON payload: {logging_payload}")
-#     # Run the Claude model similar to 'claude-reply' and then utilize the POST data as the argument.
-#     message = await client.messages.create(
-#         model="claude-haiku-4-5",
-#         max_tokens=1024,
-#         messages=[{
-#             "role": "user",
-#             "content": f"Analyze the given notes: {user_notes}"
-#         }]
-#     )
-
-#     # Block extract the reponse simillr to 'claude-reply'.
-#     block = message.content[0]
-#     reply_text = block.text if block.type == "text" else ""
-#     # Return the input.
-#     return {
-#         "Notes": user_notes,
-#         "Reply": reply_text
-#     } """
 
 @app.post("/claude-quiz")  # Create quizzes with the given keyword by claude.
 async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depends(get_session)):
@@ -151,7 +123,6 @@ async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depend
 @app.post("/med-cards")
 async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depends(get_session)):
     user_drug_name = user_text.drug_name
-    user_topic = user_text.medical_topic
     # Turn the dictionary into labelled sections:
     label_items = await retrieve_openfda(user_drug_name)
     ''' No label found -- openFDA has nothing for this drug, so there's nothing to
@@ -248,7 +219,6 @@ async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depen
         new_study_item = StudyItem(  # 2. create a StudyItem (type="quiz", title=user_question, topic=users_topic source_type="ai_generated") -- making a folder for this quiz, no questions yet, just the label.
             type="med_card",
             title=user_drug_name,
-            topic=user_topic,
             source_type="openfda"
         )
 
@@ -297,7 +267,7 @@ async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depen
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")
 
-@app.get("/med-cards")  # this is the list screen for medical cards -- where the front end will grab from.
+@app.get("/med-cards", response_model=StudyItemListRead)  # this is the list screen for medical cards -- where the front end will grab from.
 async def grab_med_cards(session: AsyncSession = Depends(get_session)):
     # 1. Build out the query -- pull from study_item table -- use select().where().order_by() -- store it as varible (statement)
     statement = select(StudyItem).where(StudyItem.type == "med_card").order_by(StudyItem.created_at.desc())  # type: ignore

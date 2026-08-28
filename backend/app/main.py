@@ -11,7 +11,7 @@ import json
 import anthropic
 import uuid
 from app.database import get_session, AsyncSession
-from app.models import StudyItem, QuizQuestion, MedCard, StudyItemRead
+from app.models import StudyItem, QuizQuestion, MedCard, StudyItemRead, StudyItemMedCardRead
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 
@@ -307,6 +307,19 @@ async def grab_med_cards(session: AsyncSession = Depends(get_session)):
     med_card_results = results.scalars().all()
 
     return med_card_results
+
+@app.get("/med-cards/{card_id}", response_model=StudyItemMedCardRead)  # response_model declares what can show up not what is pull -- that's for the query (from a table line - 313)
+async def get_med_id(card_id: uuid.UUID, session: AsyncSession = Depends(get_session)):
+    statement = select(StudyItem).where(StudyItem.id == card_id).options(selectinload(StudyItem.medical_card))  # type: ignore
+
+    results = await session.execute(statement)
+
+    med_card_results = results.scalar_one_or_none()
+
+    if not med_card_results:
+        raise HTTPException(status_code=404, detail="Your request failed to fetch the required data.")
+    return med_card_results
+
 
 @app.get("/quizzes")  # List out the currently saved quizzes from supabase
 async def database_quizzes(session: AsyncSession = Depends(get_session)):

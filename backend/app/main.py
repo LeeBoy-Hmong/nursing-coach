@@ -120,9 +120,10 @@ async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depend
         raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")  # This creates a guard to ensure json.loads fail properly instead of 500 status crash.
 
 
-@app.post("/med-cards")
+@app.post("/med-cards", response_model=StudyItemMedCardRead)
 async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depends(get_session)):
     user_drug_name = user_text.drug_name
+    user_topic = user_text.medical_topic
     # Turn the dictionary into labelled sections:
     label_items = await retrieve_openfda(user_drug_name)
     ''' No label found -- openFDA has nothing for this drug, so there's nothing to
@@ -219,6 +220,7 @@ async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depen
         new_study_item = StudyItem(  # 2. create a StudyItem (type="quiz", title=user_question, topic=users_topic source_type="ai_generated") -- making a folder for this quiz, no questions yet, just the label.
             type="med_card",
             title=user_drug_name,
+            topic=user_topic,
             source_type="openfda"
         )
 
@@ -249,25 +251,28 @@ async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depen
 
         await session.commit()  # await session.commit() -- allow both row to land, or neither.
 
-        return {
-            "id": new_study_item.id,
-            "generic name":generic_n,
-            "brand name":brand_n,
-            "drug class": drug_c,
-            "dose": dosage,
-            "route": route_,
-            "mechanism of action": mech_of_action,
-            "contraindications": contraindications_,
-            "adverse effects": adverse_eff,
-            "patient teaching": patient_teach,
-            "indication" : indication_,
-            "rxcui": rxcui_
-        }
+        new_study_item.medical_card = medical_card  # # Attach card to parent (async won't lazy-load); return the PARENT -- it's the container because med_card holds the FK
+
+        return new_study_item  # Returning whatever the response model is.
+        # return {
+        #     "id": new_study_item.id,
+        #     "generic name":generic_n,
+        #     "brand name":brand_n,
+        #     "drug class": drug_c,
+        #     "dose": dosage,
+        #     "route": route_,
+        #     "mechanism of action": mech_of_action,
+        #     "contraindications": contraindications_,
+        #     "adverse effects": adverse_eff,
+        #     "patient teaching": patient_teach,
+        #     "indication" : indication_,
+        #     "rxcui": rxcui_
+        # }
 
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")
 
-@app.get("/med-cards", response_model=StudyItemListRead)  # this is the list screen for medical cards -- where the front end will grab from.
+@app.get("/med-cards", response_model=list[StudyItemListRead])  # Add list[] to return the list screen for medical cards -- where the front end will grab from.
 async def grab_med_cards(session: AsyncSession = Depends(get_session)):
     # 1. Build out the query -- pull from study_item table -- use select().where().order_by() -- store it as varible (statement)
     statement = select(StudyItem).where(StudyItem.type == "med_card").order_by(StudyItem.created_at.desc())  # type: ignore
@@ -291,7 +296,7 @@ async def get_med_id(card_id: uuid.UUID, session: AsyncSession = Depends(get_ses
     return med_card_results
 
 
-@app.get("/quizzes")  # List out the currently saved quizzes from supabase
+@app.get("/quizzes", response_model=list[StudyItemListRead])  # List out the currently saved quizzes from supabase
 async def database_quizzes(session: AsyncSession = Depends(get_session)):
     ''' 1a. Build out a query -- created a statement variable with select function from SQLAlchemy a .where() & .order_by() method.
     1b. We're pulling from the study_item table -- remember we changed the class StudyItem '''

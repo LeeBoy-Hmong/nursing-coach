@@ -1,3 +1,5 @@
+// Interface's have to match out read models -- it is telling what to output.
+
 export interface Question {
     id: string;  // In place of uuid
     question: string;
@@ -68,7 +70,7 @@ export async function fetchQuizById(quiz_id: string): Promise<SavedQuiz> {
     return data;
 };
 
-export async function fetchQuizList(): Promise<SavedQuiz[]> {
+export async function fetchQuizList(): Promise<SavedMedCardsLists[]> {
     const response = await fetch(`${API_URL}/quizzes`, {
         method: "GET",
     });
@@ -79,11 +81,11 @@ export async function fetchQuizList(): Promise<SavedQuiz[]> {
 // Create three fetch functions for Med card -- ensure the are async.
 // fetchMedCard(), fetchMedCardList(), and fetchMedCardId()
 
-export async function fetchMedCard(drugName: string): Promise<MedCards> {
+export async function fetchMedCard(drugName: string, drug_topic: string): Promise<SavedMedCards> {
     const response = await fetch(`${API_URL}/med-cards`, {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
-        body: JSON.stringify({ generic_name: drugName }),
+        body: JSON.stringify({ drug_name: drugName, medical_topic: drug_topic }),  // We are telling this what to send, so the Body's key has to match you BaseModel of the POST function.
         });
         if (!response.ok) throw new Error(`Status: ${response.status}`);
         const data = await response.json();

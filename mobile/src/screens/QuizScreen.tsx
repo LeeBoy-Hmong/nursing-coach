@@ -19,7 +19,7 @@ export default function QuizScreen() {
   const [error, setError] = useState<string>("");
   const [nurseQuestion, setNurseQuestion] = useState<string>("");
   const [nurseTopic, setNurseTopic] = useState<string>("");
-  const [savedQuizzes, setSavedQuizzes] = useState<SavedQuiz[]>([]);  // savedQuizzes is to read-only.
+  const [savedQuizzes, setSavedQuizzes] = useState<SavedMedCardsLists[]>([]);  // savedQuizzes is to read-only.
   const [openQuizzes, setOpenQuizzes] = useState<SavedQuiz | null>(null)  // State can hold the Object SavedQuiz or null. Holds one thing, or nothing yet.
   /* REVEAL STEP 1 — which answers are showing.
    Holds KEYS, not positions. Two lists render answers (the generated quiz and an

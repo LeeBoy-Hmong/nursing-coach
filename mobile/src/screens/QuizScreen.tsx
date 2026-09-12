@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, TextInput, View, Button, ScrollView, Pressable } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { colors, spacing, fontSize, radius } from '../theme';
-import { fetchQuiz, fetchQuizList, fetchQuizById, Question, SavedQuiz } from '../lib/api';
+import { fetchQuiz, fetchQuizList, fetchQuizById, Question, SavedQuiz, SavedMedCardsLists } from '../lib/api';
 import QuizListItem from '../components/QuizListItem';
 
   // Defining the shape of my data. user 'interface' to build it out - similar to BaseModel in Pydantic.

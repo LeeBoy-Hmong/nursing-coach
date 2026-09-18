@@ -12,7 +12,7 @@ onTap: () => void; // Takes in no arguments and returns nothing.
 export default function QuizListItem({ title, onTap }: QuizListItemProps) {
     return (
         <Pressable onPress={onTap} style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1}]}>
-            <Text style={{ fontSize: fontSize.lg, padding: 15, borderBottomWidth: 1, borderColor: '#ccc' }}>{title}</Text>
+            <Text style={{ fontSize: fontSize.body, padding: 15, borderBottomWidth: 1, borderColor: '#ccc' }}>{title}</Text>
         </Pressable>
     )
 };

@@ -19,7 +19,7 @@
  */
 export const colors = {
   // Main brand colors
-  navy: '#071B32',       // Deep navy blue — header background and primary text
+  navy: '#28507A',       // Deep navy blue — header background and primary text
   blue: '#168BFF',       // Bright blue — login button and blue portion of the logo
   emerald: '#00C896',    // Vibrant emerald green — green portion of the logo
 

@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, TextInput, View, Button, ScrollView, Pressable } from 'react-native';
+import { Link, useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { colors, spacing, fontSize, radius } from '../theme';
 import { fetchQuiz, fetchQuizList, fetchQuizById, Question, SavedQuiz, SavedMedCardsLists } from '../lib/api';
@@ -92,6 +93,10 @@ export default function QuizScreen() {
       style={styles.scroll}
       contentContainerStyle={styles.scrollContent}
       >
+
+        <Link href="/medcards">
+          <Text>Med Cards</Text>
+        </Link>
         <TextInput
           value={nurseQuestion}
           onChangeText={setNurseQuestion}
@@ -164,15 +169,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surface,
-    color: colors.text,
-    fontSize: fontSize.md,
-    padding: spacing.sm,
-    width: 250,
-    marginBottom: spacing.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.sm,
+      backgroundColor: colors.white,
+      color: colors.navy,
+      fontSize: fontSize.body,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm + spacing.xs,
+      marginBottom: spacing.md,
   },
 });
 

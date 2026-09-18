@@ -68,7 +68,7 @@ export default function MedicalCards() {
                     <Image
                         source={require('../../assets/nightingale.png')}
                         style={styles.logo}
-                        resizeMode="contain"
+                        resizeMode='contain'
                     />
                     <Text style={styles.wordmark}>MedCard</Text>
                 </View>
@@ -167,19 +167,22 @@ export default function MedicalCards() {
                     }
 
                     renderItem={({ item }) => (
-                        <View style={styles.cardRow}>
-                            <View style={styles.cardIcon}>
-                                <Text style={styles.cardIconGlyph}>℞</Text>
-                            </View>
-                            <View style={styles.cardTextBlock}>
-                                <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
-                                {item.topic ? (
-                                    <Text style={styles.cardSubtitle} numberOfLines={1}>{item.topic}</Text>
-                                ) : null}
-                            </View>
-                            <Text style={styles.cardChevron}>›</Text>
-                        </View>
-                    )}
+                        <Link href={`/medcards/${item.id}`} asChild>
+                            <Pressable style={styles.cardRow}>
+                                <View style={styles.cardIcon}>
+                                    <Text style={styles.cardIconGlyph}>℞</Text>
+                                </View>
+                                <View style={styles.cardTextBlock}>
+                                    <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
+                                    {item.topic ? (
+                                        <Text style={styles.cardSubtitle} numberOfLines={1}>{item.topic}</Text>
+                                    ) : null}
+                                </View>
+                                <Text style={styles.cardChevron}>›</Text>
+                            </Pressable>
+                        </Link>
+                        )
+                    }
 
                     ListEmptyComponent={
                         <View style={styles.emptyBox}>
@@ -295,7 +298,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         gap: spacing.sm,
-        backgroundColor: colors.blue,
+        backgroundColor: colors.emerald,
         borderRadius: radius.sm,
         paddingVertical: spacing.md,
         marginTop: spacing.xs,

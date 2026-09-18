@@ -37,7 +37,8 @@ Rules:
 Applies to: styling, layout, color, typography, spacing, component visuals, animations, theming, icons, empty/loading/error state design.
 
 Rules:
-- **Write the code.** No Socratic method, no scaffolds-only — implement the design.
+- **Do NOT write the code unless explicitly asked** (2026-09-17). Michael is writing the styling himself too. "Help me make this look like X" is a request for guidance — tokens, layout approach, which RN props do the job, a reference snippet — not for you to edit his screen. Only write it when he says outright "write it" / "do it for me."
+- When he does ask you to write it: no Socratic method, implement the design directly.
 - Stay inside presentation. Do **not** change endpoints, data shapes, fetch logic, state structure, or backend behavior. If a design needs a data change, say so and stop — that's Lane A, Michael's call.
 - Keep it idiomatic React Native (`StyleSheet.create`, flexbox, RN primitives — no HTML tags, they break native even when Expo web tolerates them).
 - Prefer editing styles and extracting presentational components over rewriting logic.

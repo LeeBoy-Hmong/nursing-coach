@@ -17,6 +17,11 @@
  * students, often studying late. Avoid alarm-red and high-energy colors except
  * where something genuinely needs attention.
  */
+import { IBMPlexSans_100Thin,
+  IBMPlexSans_400Regular,
+  IBMPlexSans_600SemiBold,
+  IBMPlexSans_700Bold, } from '@expo-google-fonts/ibm-plex-sans';
+
 export const colors = {
   // Main brand colors
   navy: '#28507A',       // Deep navy blue — header background and primary text
@@ -70,6 +75,14 @@ export const fontSize = {
   brand: 36,     // App name — “NurseSpace”
 } as const;
 
+
+/** Font type. Will only use one type of font. */
+export const fontType = {
+  thin: 'IBMPlexSans_100Thin',
+  regular: 'IBMPlexSans_400Regular',
+  semi_bold: 'IBMPlexSans_600SemiBold',
+  bold: 'IBMPlexSans_700Bold',
+}
 /** Corner radii. */
 export const radius = {
   none: 0,    // Square corners

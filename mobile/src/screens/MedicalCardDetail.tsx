@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchMedCard } from '../lib/api';
 import { ActivityIndicator, ScrollView, StyleSheet, View, Text } from 'react-native'
-import { colors, spacing, radius, fontSize, shadow } from '../theme'
+import { colors, spacing, radius, fontSize, fontType, shadow } from '../theme'
 import { fetchMedCardID } from '../lib/api';
 import { SavedMedCards } from '../lib/api';  // we're going to be pulling medical_cards to represent our cards.
 
@@ -12,6 +12,7 @@ import { SavedMedCards } from '../lib/api';  // we're going to be pulling medica
 interface MedicalCardProps {
     cardId : string
 }
+// Build out the Medical card data for the 12 rows in SavedMedCards
 
 export function MedicalCardDetails({ cardId }: MedicalCardProps) {
     // Set the states.
@@ -78,14 +79,36 @@ export function MedicalCardDetails({ cardId }: MedicalCardProps) {
         </View>
         )
     }
+
+    const medField = [
+        { label: 'drug_class' , value: medicalCard.drug_class},
+        { label: 'dose', value: medicalCard.dose },
+        { label: 'route', value: medicalCard.route },
+        { label: 'frequency', value: medicalCard.frequency },
+        { label: 'mechanism_of_action', value: medicalCard.mechanism_of_action },
+        { label: 'contraindications', value: medicalCard.contraindications },
+        { label: 'adverse_effects', value: medicalCard.adverse_effects },
+        { label: 'nursing_considerations', value: medicalCard.nursing_considerations },
+        { label: 'rxcui', value: medicalCard.rxcui }, 
+        { label: 'labs_to_monitor', value: medicalCard.labs_to_monitor },
+        { label: 'indication', value: medicalCard.indication },
+        { label: 'patient_teaching', value: medicalCard.patient_teaching}
+    ]
     // Use ScrollView to create the page -- have the inner canvas be a card. Pull the generic name, brandname, and topic. Only if they're not null.
     return (
-        <ScrollView style={styles.outerWrapper}>
+        <ScrollView style={styles.outerWrapper} showsVerticalScrollIndicator={false}>
             <View style={styles.formCard}>
             {medicalCard.brand_name ? <Text style={styles.canvasText}>{medicalCard.brand_name}</Text>: null}
             {medicalCard.generic_name ? <Text style={styles.canvasText}>{medicalCard.generic_name}</Text>: null}
             {card.topic ? <Text style={styles.canvasText}>{card.topic}</Text> : null}
             </View>
+            {/* Run the loop through here of the medField -- use the .filter((item) = > item.value) -- state if value is null, it won't show.*/}
+            {/* use the .map(() = > ) */}
+            {medField.filter((item) => item.value).map(( item, index ) =>
+            <View key={index} style={styles.cardRow}>
+                <Text style={styles.label}>{item.label.replace(/_/g, " ")}</Text>
+                <Text style={styles.value}>{item.value}</Text>
+            </View>)}
         </ScrollView>
     )
 }
@@ -110,20 +133,37 @@ const styles = StyleSheet.create({
     },
     canvasText: {
         fontSize: fontSize.title,
-        fontWeight: '500',
+        fontWeight: '700',
+        textTransform: 'uppercase',
         color: colors.navy,
-        borderColor: colors.white
+/*      borderWidth: 3,
+        borderColor: colors.navy */
     },
     cardRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
         backgroundColor: colors.white,
         borderRadius: radius.md,
         padding: spacing.md,
-        marginBottom: spacing.md
+        marginTop: spacing.md,
+        marginBottom: spacing.md,
+        borderWidth: 3,
+        borderColor: colors.navy
     },
     error: {
         color: colors.error,
         fontSize: fontSize.label
-    }
+    },
+    label: {
+        fontSize: fontSize.body,
+        fontWeight: '700',
+        color: colors.navy,
+        textTransform: 'uppercase',
+        marginBottom: 4,
+  },
+    value: {
+        fontSize: 16,
+        alignItems: 'center',
+        color: colors.navy,
+  },
 })

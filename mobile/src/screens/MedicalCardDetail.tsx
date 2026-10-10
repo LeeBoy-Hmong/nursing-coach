@@ -88,9 +88,9 @@ export function MedicalCardDetails({ cardId }: MedicalCardProps) {
         { label: 'mechanism_of_action', value: medicalCard.mechanism_of_action },
         { label: 'contraindications', value: medicalCard.contraindications },
         { label: 'adverse_effects', value: medicalCard.adverse_effects },
-        { label: 'nursing_considerations', value: medicalCard.nursing_considerations },
+        { label: 'nursing_considerations', value: medicalCard.nursing_considerations, derived: true },  // Derived - used to characterize what was produced by AI
         { label: 'rxcui', value: medicalCard.rxcui }, 
-        { label: 'labs_to_monitor', value: medicalCard.labs_to_monitor },
+        { label: 'labs_to_monitor', value: medicalCard.labs_to_monitor, derived: true },
         { label: 'indication', value: medicalCard.indication },
         { label: 'patient_teaching', value: medicalCard.patient_teaching}
     ]
@@ -104,8 +104,9 @@ export function MedicalCardDetails({ cardId }: MedicalCardProps) {
             </View>
             {/* Run the loop through here of the medField -- use the .filter((item) = > item.value) -- state if value is null, it won't show.*/}
             {/* use the .map(() = > ) */}
-            {medField.filter((item) => item.value).map(( item, index ) =>
-            <View key={index} style={styles.cardRow}>
+            {medField.filter((item) => item.value).map(( item ) =>
+            <View key={item.label} style={styles.cardRow}>
+                {item.derived ? <Text style={styles.badge}>AI-Generated</Text>: null} {/* If derived is true, then this badge would reveal */}
                 <Text style={styles.label}>{item.label.replace(/_/g, " ")}</Text>
                 <Text style={styles.value}>{item.value}</Text>
             </View>)}
@@ -114,6 +115,16 @@ export function MedicalCardDetails({ cardId }: MedicalCardProps) {
 }
 
 const styles = StyleSheet.create({
+    badge: {
+        fontSize: fontSize.caption,
+        color: colors.greenLink,         
+        backgroundColor: colors.background,             
+        paddingHorizontal: spacing.sm,   
+        paddingVertical: 2,              
+        borderRadius: radius.pill,  
+        alignSelf: 'flex-start', 
+        marginBottom: spacing.xs,
+    },
     screen: {
         flex: 1,
         alignItems: 'center',

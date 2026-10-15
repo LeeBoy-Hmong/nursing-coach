@@ -9,6 +9,7 @@ class AppSettings(BaseSettings):
     supabase_connector: str
     rxnorm_base: str
     openfda_base: str
+    test_db: str = "postgresql+asyncpg://test:test@localhost:5433/nurse_test"
     db_echo: bool = False
 
     model_config = SettingsConfigDict(

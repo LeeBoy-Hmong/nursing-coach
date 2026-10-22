@@ -7,6 +7,7 @@ ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 class AppSettings(BaseSettings):
     anthropic_api: str
     supabase_connector: str
+    supabase_url: str
     rxnorm_base: str
     openfda_base: str
     test_db: str = "postgresql+asyncpg://test:test@localhost:5433/nurse_test"

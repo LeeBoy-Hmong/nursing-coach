@@ -14,6 +14,7 @@ from app.database import get_session, AsyncSession
 from app.models import StudyItem, QuizQuestion, MedCard, StudyItemRead, StudyItemMedCardRead, StudyItemListRead
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
+from app.auth import get_current_user
 
 app = FastAPI()
 
@@ -328,7 +329,11 @@ async def get_id(quiz_id: uuid.UUID, session: AsyncSession = Depends(get_session
         raise HTTPException(status_code=404, detail="Your request failed to fetch the required data.") # Server reached the site, but the request failed.
 
     return quiz_results
- 
+
+
+@app.get("/whoami")
+def who_am_i(current_user: uuid.UUID = Depends(get_current_user)):
+    return {"current_user": current_user}
 
 @app.get("/")
 def reading_roots():

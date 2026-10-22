@@ -122,7 +122,7 @@ async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depend
 
 
 @app.post("/med-cards", response_model=StudyItemMedCardRead)
-async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depends(get_session)):
+async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depends(get_session), user_id: uuid.UUID = Depends(get_current_user)):
     user_drug_name = user_text.drug_name
     user_topic = user_text.medical_topic
     # Turn the dictionary into labelled sections:
@@ -219,6 +219,7 @@ async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depen
         drug_c = clean_card_reply.get("drug_class")
         # Create the save order
         new_study_item = StudyItem(  # 2. create a StudyItem (type="quiz", title=user_question, topic=users_topic source_type="ai_generated") -- making a folder for this quiz, no questions yet, just the label.
+            user_id=user_id,
             type="med_card",
             title=user_drug_name,
             topic=user_topic,
@@ -274,9 +275,9 @@ async def medical_card(user_text: MedCardRequests, session: AsyncSession = Depen
         raise HTTPException(status_code=502, detail="Claude returned and invalid JSON")
 
 @app.get("/med-cards", response_model=list[StudyItemListRead])  # Add list[] to return the list screen for medical cards -- where the front end will grab from.
-async def grab_med_cards(session: AsyncSession = Depends(get_session)):
+async def grab_med_cards(session: AsyncSession = Depends(get_session), user_id: uuid.UUID = Depends(get_current_user)):
     # 1. Build out the query -- pull from study_item table -- use select().where().order_by() -- store it as varible (statement)
-    statement = select(StudyItem).where(StudyItem.type == "med_card").order_by(StudyItem.created_at.desc())  # type: ignore
+    statement = select(StudyItem).where(StudyItem.type == "med_card").where(StudyItem.user_id == user_id).order_by(StudyItem.created_at.desc())  # type: ignore
     # 2. Run the query -- give the results and object -- create a results variable to 'execute' the query statement.
     results = await session.execute(statement)
     # 3. Use SQLAlchemy methods .scalars() to unwrap the row tuples that we queried. Additionally, use the .all() method to excute the fetch completely to pull it to a Python-list

@@ -45,7 +45,7 @@ class MedCardRequests(BaseModel):
     medical_topic: str | None = None 
 
 @app.post("/claude-quiz")  # Create quizzes with the given keyword by claude.
-async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depends(get_session)):
+async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depends(get_session), user_id: uuid.UUID = Depends(get_current_user)):
     user_question = userText.question
     user_topic = userText.topic
 
@@ -88,6 +88,7 @@ async def quiz_questions(userText: NotesRequests, session: AsyncSession = Depend
 
         new_study_item = StudyItem(  # 2. create a StudyItem (type="quiz", title=user_question, topic=users_topic source_type="ai_generated") -- making a folder for this quiz, no questions yet, just the label.
             type="quiz",
+            user_id=user_id,
             title=user_question,
             topic=user_topic,
             source_type="ai_generated"
@@ -286,8 +287,8 @@ async def grab_med_cards(session: AsyncSession = Depends(get_session), user_id: 
     return med_card_results
 
 @app.get("/med-cards/{card_id}", response_model=StudyItemMedCardRead)  # response_model declares what can show up not what is pull -- that's for the query (from a table line - 313)
-async def get_med_id(card_id: uuid.UUID, session: AsyncSession = Depends(get_session)):
-    statement = select(StudyItem).where(StudyItem.id == card_id).options(selectinload(StudyItem.medical_card))  # type: ignore
+async def get_med_id(card_id: uuid.UUID, session: AsyncSession = Depends(get_session), user_id: uuid.UUID = Depends(get_current_user)):
+    statement = select(StudyItem).where(StudyItem.id == card_id).where(StudyItem.user_id == user_id).options(selectinload(StudyItem.medical_card))  # type: ignore
 
     results = await session.execute(statement)
 
@@ -299,10 +300,10 @@ async def get_med_id(card_id: uuid.UUID, session: AsyncSession = Depends(get_ses
 
 
 @app.get("/quizzes", response_model=list[StudyItemListRead])  # List out the currently saved quizzes from supabase
-async def database_quizzes(session: AsyncSession = Depends(get_session)):
+async def database_quizzes(session: AsyncSession = Depends(get_session), user_id: uuid.UUID = Depends(get_current_user)):
     ''' 1a. Build out a query -- created a statement variable with select function from SQLAlchemy a .where() & .order_by() method.
     1b. We're pulling from the study_item table -- remember we changed the class StudyItem '''
-    statement = select(StudyItem).where(StudyItem.type == "quiz").order_by(StudyItem.created_at.desc())  # type: ignore
+    statement = select(StudyItem).where(StudyItem.type == "quiz").where(StudyItem.user_id == user_id).order_by(StudyItem.created_at.desc())  # type: ignore
     # 2a. Run the query that was built -- give the results and object
     results = await session.execute(statement)
     '''# .scalars() unwraps the row tuple. execute() always returns rows as tuples
@@ -318,9 +319,9 @@ async def database_quizzes(session: AsyncSession = Depends(get_session)):
 
 
 @app.get("/quizzes/{quiz_id}", response_model=StudyItemRead) # {quiz_id} is a path parameter -- Grab the quiz when a student want's that selected quiz. response_model is the JSON shape we want.
-async def get_id(quiz_id: uuid.UUID, session: AsyncSession = Depends(get_session)):
+async def get_id(quiz_id: uuid.UUID, session: AsyncSession = Depends(get_session),user_id: uuid.UUID = Depends(get_current_user)):
     # 3. Fetch the children of what we are looking for.
-    statement = select(StudyItem).where(StudyItem.id == quiz_id).options(selectinload(StudyItem.questions))  # selectinload -- eager loads it. # type: ignore
+    statement = select(StudyItem).where(StudyItem.id == quiz_id).where(StudyItem.user_id == user_id).options(selectinload(StudyItem.questions))  # selectinload -- eager loads it. # type: ignore
 
     results = await session.execute(statement)
 

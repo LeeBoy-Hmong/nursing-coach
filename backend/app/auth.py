@@ -18,14 +18,14 @@ jwk_client = PyJWKClient(f"{settings.supabase_url}/auth/v1/.well-known/jwks.json
 security_bearer = HTTPBearer(auto_error=False)
 
 # Create a dependency function -- an async function to get the current user. Annotate to a uuid.
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security_bearer)):
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security_bearer)) -> uuid.UUID:
     """
     FastAPI dependency that extracts, verifies, and parses the JWT token,
     returning the User ID as a native Python UUID instance.
     """   
     if credentials is None:
         raise HTTPException(status_code=401, detail="Client Error: Unauthorized Request")
-    try:
+    try: 
     # get the signing key -- create the payload with jwt.decode()
         jwk_signin_key = jwk_client.get_signing_key_from_jwt(credentials.credentials)
         payload = jwt.decode(

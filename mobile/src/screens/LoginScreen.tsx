@@ -56,7 +56,7 @@ export default function LoginDisplay() {
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
-                  placeholder="password"
+                  placeholder="Password"
                   secureTextEntry={isSecure}
                   autoCapitalize="none"
                   style={styles.input}

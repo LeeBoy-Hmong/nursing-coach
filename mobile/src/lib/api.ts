@@ -1,3 +1,4 @@
+import { supabase } from "../lib/supabase"
 // Interface's have to match out read models -- it is telling what to output.
 
 export interface Question {
@@ -51,10 +52,25 @@ export interface SavedMedCardsLists {
 
 const API_URL = "http://localhost:8000"
 
+// Create a helper function (async) to ask SupaBase for the current session and returns the header object. Each fetch should call it.
+async function authHeader() {
+    // Create a variable to ask Supabase what session it's holding.
+    const { data } = await supabase.auth.getSession()
+    // Create a variable of where the token is to be found. -> within the data session above?.access_token; (From SupaBase)
+    const token = data.session?.access_token
+    // return the header
+    return {
+        "Content-Type": "application/json",
+        ...(token ? {Authorization: `Bearer ${token}`} : {})  // '...' is a spread operator - takes objects keys and pastes theminto the object being built.
+    }
+}
+
 export async function fetchQuiz(nurseQuestion: string, nurseTopic: string): Promise<Question[]> {
+    const header = await authHeader() 
+
     const response = await fetch(`${API_URL}/claude-quiz`, {
         method: "POST",
-        headers: { "Content-Type": "application/json"},
+        headers: header,
         body: JSON.stringify({ question: nurseQuestion, topic: nurseTopic }),
     });
     if (!response.ok) throw new Error(`Status: ${response.status}`);
@@ -63,7 +79,11 @@ export async function fetchQuiz(nurseQuestion: string, nurseTopic: string): Prom
 };
 
 export async function fetchQuizById(quiz_id: string): Promise<SavedQuiz> {
-    const response = await fetch(`${API_URL}/quizzes/${quiz_id}`);
+    const header = await authHeader(); 
+
+    const response = await fetch(`${API_URL}/quizzes/${quiz_id}`, {
+        headers: header
+    });
 
     if (!response.ok) throw new Error(`Status: ${response.status}`);
     const data = await response.json();
@@ -71,8 +91,11 @@ export async function fetchQuizById(quiz_id: string): Promise<SavedQuiz> {
 };
 
 export async function fetchQuizList(): Promise<SavedMedCardsLists[]> {
+    const header = await authHeader();
+    
     const response = await fetch(`${API_URL}/quizzes`, {
         method: "GET",
+        headers: header
     });
     if (!response.ok) throw new Error(`Status: ${response.status}`);  // Throw a status error if issue with fetching from the API.
     const data = await response.json();
@@ -82,9 +105,11 @@ export async function fetchQuizList(): Promise<SavedMedCardsLists[]> {
 // fetchMedCard(), fetchMedCardList(), and fetchMedCardId()
 
 export async function fetchMedCard(drugName: string, drug_topic: string): Promise<SavedMedCards> {
+    const header = await authHeader() 
+    
     const response = await fetch(`${API_URL}/med-cards`, {
         method: "POST",
-        headers: {"Content-Type" : "application/json"},
+        headers: header,
         body: JSON.stringify({ drug_name: drugName, medical_topic: drug_topic }),  // We are telling this what to send, so the Body's key has to match you BaseModel of the POST function.
         });
         if (!response.ok) throw new Error(`Status: ${response.status}`);
@@ -93,8 +118,11 @@ export async function fetchMedCard(drugName: string, drug_topic: string): Promis
 };
 
 export async function fetchMedCardList(): Promise<SavedMedCardsLists[]> {
+    const header = await authHeader() 
+    
     const response = await fetch(`${API_URL}/med-cards`, {
-        method: "GET"
+        method: "GET",
+        headers: header,
     });
     if (!response.ok) throw new Error(`Status: ${response.status}`);
     const data = await response.json();
@@ -102,8 +130,11 @@ export async function fetchMedCardList(): Promise<SavedMedCardsLists[]> {
 };
 
 export async function fetchMedCardID(card_id: string): Promise<SavedMedCards> {
+    const header = await authHeader() 
+    
     const response = await fetch(`${API_URL}/med-cards/${card_id}`, {
-        method: "GET"
+        method: "GET",
+        headers: header
     });
     if (!response.ok) throw new Error(`Status: ${response.status}`);
     const data = await response.json();

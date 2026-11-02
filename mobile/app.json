@@ -30,6 +30,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "supabaseUrl": "https://fihrgndeblwqaeerzjpb.supabase.co",
+      "supabasePublishableKey": "sb_publishable_6rfnrdMe8cRkeJZ1BKtGIw_whgUfUC0"
     }
   }
 }

@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../src/lib/supabase';
 
-const isLoggedIN = false;
-
 // Read the current value, subscribe to changes, clean up, don't render until you know.
 // Export a default function called a RootLayout.
 export default function RootLayout() {
@@ -51,14 +49,18 @@ export default function RootLayout() {
     if (checking) return null;
 
     return (
-        <Stack>
-            <Stack.Protected guard={!isLoggedIN}>
+        <Stack screenOptions={{ headerShown: false}}>
+            {/*Stack.Protected -- ensures only logged in users can view this screen.*/}{/*When the user is not logged in they can access this page*/}
+            <Stack.Protected guard={!session}>
                 <Stack.Screen name="login"/>
+            </Stack.Protected>
+            {/*Can log in to these pages once they are logged in (not false) -- '!!' ensures there is session forced to boolean*/}
+            <Stack.Protected guard={!!session}>
                 {/* user 'screenOptions={{ headerShown: false }} to get rid of the all the ugly titles.*/}
-            <Stack screenOptions={{ headerShown: false}}> 
                 <Stack.Screen name="index" options={{ title: "Home"}} />
-            </Stack>
+                <Stack.Screen name="medcards"/>
+                <Stack.Screen name="quiz"/>
+                <Stack.Screen name="medcards/[id]"/>
             </Stack.Protected>
         </Stack>
-    );
-}
+)};
